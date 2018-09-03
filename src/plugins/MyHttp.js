@@ -1,4 +1,5 @@
 import Axios from "axios"
+import Vue from 'vue'
 const MyHttp = {}
     // vue插件 必须有一个公共的install方法
 MyHttp.install = function() {

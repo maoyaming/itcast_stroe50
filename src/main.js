@@ -12,12 +12,9 @@ import MyHttp from '@/plugins/MyHttp'
 // 注册插件
 Vue.use(MyHttp)
 
-
-
 Vue.use(ElementUI)
 
 Vue.config.productionTip = false
-
 
 /* eslint-disable no-new */
 new Vue({
