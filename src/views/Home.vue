@@ -9,7 +9,7 @@
                 <span>电商后台管理系统</span>
             </el-col>
             <el-col :span="1">
-                <a class="loginLot" href="javascript:;">退出</a>
+                <a class="loginLot" href="javascript:;" @click.prevent="handleOut">退出</a>
             </el-col>
         </el-row>
     </el-header>
@@ -69,7 +69,24 @@
  </el-container>
 </template>
 <script>
-    
+    export default {
+        //判断登录
+        beforeCreate() {
+            const token = sessionStorage.getItem('token')
+        // 判断是否获取到token
+            if(!token){
+                this.$message.warning('请先登录')
+                this.$router.push('/login')
+            }
+        },
+        methods: {
+            handleOut(){
+                sessionStorage.clear();
+                this.$message.success('退出成功')
+                this.$router.push('/login')
+            }        
+        }
+    }
 </script>
 <style>
 .loginLot {
