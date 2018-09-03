@@ -6,8 +6,15 @@ import router from './router'
 
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
+import '@/assets/css/index.css'
+import MyHttp from '@/plugins/MyHttp'
 
-Vue.use(ElementUI);
+// 注册插件
+Vue.use(MyHttp)
+
+
+
+Vue.use(ElementUI)
 
 Vue.config.productionTip = false
 
