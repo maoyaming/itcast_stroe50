@@ -64,7 +64,9 @@
             </el-submenu>
         </el-menu>
     </el-aside>
-      <el-main>Main</el-main>
+      <el-main>
+          <router-view/>
+      </el-main>
     </el-container>
  </el-container>
 </template>
@@ -117,7 +119,7 @@
   .el-main {
     background-color: #E9EEF3;
     color: #333;
-    text-align: center;
+    /* text-align: center; */
   }
   
 </style>
