@@ -14,7 +14,7 @@
                 placeholder="请输入内容" v-model="input5" class="input-with-select">
                 <el-button slot="append" icon="el-icon-search"></el-button>
             </el-input>
-            <el-button plain>完成</el-button>
+            <el-button plain>添加用户</el-button>
         </el-col>
     </el-row>
     <!-- 表格 -->
@@ -23,30 +23,82 @@
        border
        stripe
       style="width: 100%">
+      <!-- 序号列 -->
       <el-table-column
         type="index"
         width="50">
       </el-table-column>
+      <!-- 姓名列 prop绑定对象的属性-->
       <el-table-column
-        prop="date"
-        label="日期"
-        width="180">
-      </el-table-column>
-      <el-table-column
-        prop="name"
+        prop="username"
         label="姓名"
         width="180">
       </el-table-column>
       <el-table-column
-        prop="address"
-        label="地址">
+        prop="email"
+        label="邮箱"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="mobile"
+        label="电话"
+        width="180">
+      </el-table-column>
+       <el-table-column
+        prop="create_time"
+        label="时间"
+        width="180">
+        <template slot-scope="scope">
+            <i class="el-icon-time"></i>
+            <span style="margin-left: 10px">{{ scope.row.create_time }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="mg_state"
+        label="用户状态"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        label="操作">
+         <template slot-scope="scope">
+            <el-button type="primary" icon="el-icon-edit" size="mini" plain></el-button>
+            <el-button type="success" icon="el-icon-check" size="mini" plain></el-button>
+            <el-button type="danger" icon="el-icon-delete" size="mini" plain></el-button>
+      </template>
       </el-table-column>
     </el-table>
   </el-card>
 </template>
 <script>
     export default {
-     
+        data() {
+            return {
+                tableData:[]
+            }
+        },
+        created() {
+            this.loadData()
+        },
+        methods: {
+            //  设置token
+            loadData() { 
+                const token = sessionStorage.getItem('token')
+                this.$http.defaults.headers.common['Authorization'] = token
+                this.$http.get('users?pagenum=1&pagesize=10')
+                .then((response)=>{
+                    const {meta: {msg, status}} = response.data
+                    if(status === 200){
+                        this.tableData = response.data.data.users
+                    }else {
+                        this.$message.error(msg)
+                    }
+                })
+                .catch((err)=>{
+                    console.log(err);
+                    
+                })
+            }
+        }
     }
 </script>
 <style>
