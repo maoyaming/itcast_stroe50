@@ -19,6 +19,7 @@
     </el-row>
     <!-- 表格 -->
     <el-table
+      v-loading="loading"
       :data="tableData"
        border
        stripe
@@ -72,13 +73,28 @@
       </template>
       </el-table-column>
     </el-table>
+    <!-- 分页 -->
+     <el-pagination
+      style="margin-top:15px"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="pagenum"
+      :page-sizes="[ 2, 3, 4, 5]"
+      :page-size="pagesize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total">
+    </el-pagination>
   </el-card>
 </template>
 <script>
     export default {
         data() {
             return {
-                tableData:[]
+                tableData: [],
+                loading: true,
+                pagenum: 1,
+                pagesize: 2,
+                total: 0
             }
         },
         created() {
@@ -89,11 +105,15 @@
             loadData() { 
                 const token = sessionStorage.getItem('token')
                 this.$http.defaults.headers.common['Authorization'] = token
-                this.$http.get('users?pagenum=1&pagesize=10')
+                this.$http.get(`users?pagenum=${this.pagenum}&pagesize=${this.pagesize}`)
                 .then((response)=>{
                     const {meta: {msg, status}} = response.data
+                    this.loading = false
                     if(status === 200){
                         this.tableData = response.data.data.users
+                        //设置总条数
+                        this.total = response.data.data.total
+                        
                     }else {
                         this.$message.error(msg)
                     }
@@ -102,6 +122,17 @@
                     console.log(err);
                     
                 })
+            },
+            // 分页方法
+            handleSizeChange(val){
+                // 页容量发生变化
+                this.pagesize = val
+                this.loadData()
+            },
+            handleCurrentChange(val){
+                // 当页码发送改变执行
+                this.pagenum = val
+                this.loadData()
             }
         }
     }
