@@ -16,7 +16,8 @@
                 placeholder="请输入内容" class="input-with-select">
                 <el-button @click="handleSerach" slot="append" icon="el-icon-search"></el-button>
             </el-input>
-            <el-button plain>添加用户</el-button>
+            <el-button plain @click="addUserDialogFormVisible = true">添加用户</el-button>
+
         </el-col>
     </el-row>
     <!-- 表格 -->
@@ -60,6 +61,7 @@
         width="80">
          <template slot-scope="scope">
             <el-switch
+            @change="handleChange(scope.row)"
             v-model="scope.row.mg_state"
             active-color="#13ce66"
             inactive-color="#ff4949">
@@ -86,6 +88,34 @@
       layout="total, sizes, prev, pager, next, jumper"
       :total="total">
     </el-pagination>
+    <!-- 添加角色对话框   sync 语法糖 值是双向的-->
+    <el-dialog 
+        title="添加成员"
+        :visible.sync="addUserDialogFormVisible">
+        <el-form 
+        label-width="80px"
+        :rules="rules" 
+        :model="formData">
+            <el-form-item label="用户名" :rules="rules" prop="username">
+                <el-input v-model="formData.username" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="密码" >
+                <el-input type="password" v-model="formData.password" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="邮箱" >
+                <el-input v-model="formData.email" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="电话" >
+                <el-input v-model="formData.mobile" auto-complete="off"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="addUserDialogFormVisible = false">取 消</el-button>
+            <el-button @click="addUserDialogFormVisible = false" type="primary">确 定</el-button>
+        </div>
+    </el-dialog>
+    
+
   </el-card>
 </template>
 <script>
@@ -97,7 +127,20 @@
                 pagenum: 1,
                 pagesize: 2,
                 total: 0,
-                searchValue: ''
+                searchValue: '',
+                addUserDialogFormVisible:false,
+                formData: {
+                    username:'',
+                    password:'',
+                    email:'',
+                    mobile:''
+                },
+                rules: {
+                    username: [
+                        { required: true, message: '请输入用户名称', trigger: 'blur' },
+                        { min: 3, max: 8, message: '长度在 3 到 8 个字符', trigger: 'blur' }
+                    ]
+                }
 
             }
         },
@@ -156,6 +199,11 @@
                         if(status === 200){
                             // 成功提示并刷新表格
                             this.$message.success(msg)
+                            // 如果最后一页并只有一条数据  条件 ---> 如果不是第一页并只有一条数据
+                            if(this.pagenum > 1 && this.tableData.length === 1){
+                                this.pagenum--
+                            }
+
                             this.loadData()
                         }else{
                             this.$message.error(msg)
@@ -166,6 +214,37 @@
                             message: '已取消删除'
                         });          
                     });
+                }
+            },
+            async handleChange(user){
+                // id 和 状态 两个参数
+               const response = await this.$http.put(`users/${user.id}/state/${user.mg_state}`)
+               const {meta: {status, msg}} = response.data
+               if(status === 200){
+                   this.$message.success(msg)
+               }else{
+                   this.$message.error(msg)
+               }
+            },
+            async handleAdd(){
+                //添加用户
+                const response = await this.$http.post('users', this.formData)
+                const {meta: {status, msg}} = response.data
+                if(status === 201){
+                    //提示 刷新表格 关闭对话框 初始化表单
+                    this.$message.success(msg)
+                    this.loadData()
+                    this.addUserDialogFormVisible = false
+                    for(let key in this.formData){
+                        this.formData[key] = ''
+                    }
+                }else {
+                    this.$message.error(msg)
+                }
+            },
+            handleClose(){
+                for(let key in this.formData){
+                    this.formData[key] = ''
                 }
             }
         
