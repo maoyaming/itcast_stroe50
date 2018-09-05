@@ -10,9 +10,11 @@
     <el-row class="row">
         <el-col :span="24">
             <el-input 
+                clearable
+                v-model="searchValue"
                 style="width:300px"
-                placeholder="请输入内容" v-model="input5" class="input-with-select">
-                <el-button slot="append" icon="el-icon-search"></el-button>
+                placeholder="请输入内容" class="input-with-select">
+                <el-button @click="handleSerach" slot="append" icon="el-icon-search"></el-button>
             </el-input>
             <el-button plain>添加用户</el-button>
         </el-col>
@@ -69,7 +71,7 @@
          <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" plain></el-button>
             <el-button type="success" icon="el-icon-check" size="mini" plain></el-button>
-            <el-button type="danger" icon="el-icon-delete" size="mini" plain></el-button>
+            <el-button @click="handleDelete(scope.row.id)" type="danger" icon="el-icon-delete" size="mini" plain></el-button>
       </template>
       </el-table-column>
     </el-table>
@@ -94,7 +96,9 @@
                 loading: true,
                 pagenum: 1,
                 pagesize: 2,
-                total: 0
+                total: 0,
+                searchValue: ''
+
             }
         },
         created() {
@@ -103,9 +107,10 @@
         methods: {
             //  设置token
             loadData() { 
+                this.loading=true
                 const token = sessionStorage.getItem('token')
                 this.$http.defaults.headers.common['Authorization'] = token
-                this.$http.get(`users?pagenum=${this.pagenum}&pagesize=${this.pagesize}`)
+                this.$http.get(`users?pagenum=${this.pagenum}&pagesize=${this.pagesize}&query=${this.searchValue}`)
                 .then((response)=>{
                     const {meta: {msg, status}} = response.data
                     this.loading = false
@@ -133,8 +138,37 @@
                 // 当页码发送改变执行
                 this.pagenum = val
                 this.loadData()
+            },
+            handleSerach(){
+                //搜索功能
+               
+                this.loadData()
+            },
+            handleDelete(id){
+                //删除功能
+                this.$confirm('确认删除?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                    }).then( async () => {
+                        const response = await this.$http.delete(`users/${id}`)
+                        const {meta: {status, msg}} = response.data
+                        if(status === 200){
+                            // 成功提示并刷新表格
+                            this.$message.success(msg)
+                            this.loadData()
+                        }else{
+                            this.$message.error(msg)
+                        }
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '已取消删除'
+                        });          
+                    });
+                }
             }
-        }
+        
     }
 </script>
 <style>
