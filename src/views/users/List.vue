@@ -45,18 +45,23 @@
         width="180">
       </el-table-column>
        <el-table-column
-        prop="create_time"
         label="时间"
         width="180">
         <template slot-scope="scope">
             <i class="el-icon-time"></i>
-            <span style="margin-left: 10px">{{ scope.row.create_time }}</span>
+            <span style="margin-left: 10px">{{ scope.row.create_time | fmtDate('YYYY-MM-DD') }}</span>
         </template>
       </el-table-column>
       <el-table-column
-        prop="mg_state"
         label="用户状态"
-        width="180">
+        width="80">
+         <template slot-scope="scope">
+            <el-switch
+            v-model="scope.row.mg_state"
+            active-color="#13ce66"
+            inactive-color="#ff4949">
+            </el-switch>
+        </template>
       </el-table-column>
       <el-table-column
         label="操作">
