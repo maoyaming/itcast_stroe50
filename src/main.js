@@ -9,11 +9,13 @@ import 'element-ui/lib/theme-chalk/index.css'
 import '@/assets/css/index.css'
 import MyHttp from '@/plugins/MyHttp'
 import Moment from 'moment'
-
+import Mybreadcrumb from '@/components/Mybreadcrumb'
 //  全局过滤器
 Vue.filter('fmtDate',(value,fmtStr) => {
     return Moment(value).format(fmtStr)
 })
+// 全局面包屑
+Vue.component(Mybreadcrumb.name,Mybreadcrumb)
 // 注册插件
 Vue.use(MyHttp)
 
