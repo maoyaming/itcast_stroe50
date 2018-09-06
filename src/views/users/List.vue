@@ -22,7 +22,6 @@
     </el-row>
     <!-- 表格 -->
     <el-table
-      v-loading="loading"
       :data="tableData"
        border
        stripe
@@ -153,7 +152,6 @@
         data() {
             return {
                 tableData: [],
-                loading: true,
                 pagenum: 1,
                 pagesize: 2,
                 total: 0,
@@ -204,13 +202,9 @@
             },
             //  设置token
             loadData() { 
-                this.loading=true
-                const token = sessionStorage.getItem('token')
-                this.$http.defaults.headers.common['Authorization'] = token
                 this.$http.get(`users?pagenum=${this.pagenum}&pagesize=${this.pagesize}&query=${this.searchValue}`)
                 .then((response)=>{
                     const {meta: {msg, status}} = response.data
-                    this.loading = false
                     if(status === 200){
                         this.tableData = response.data.data.users
                         //设置总条数
