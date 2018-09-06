@@ -72,7 +72,7 @@
         label="操作">
          <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" plain></el-button>
-            <el-button type="success" icon="el-icon-check" size="mini" plain></el-button>
+            <el-button @click="handleOpenSetRole(scope.row)" type="success" icon="el-icon-check" size="mini" plain></el-button>
             <el-button @click="handleDelete(scope.row.id)" type="danger" icon="el-icon-delete" size="mini" plain></el-button>
       </template>
       </el-table-column>
@@ -115,7 +115,37 @@
         </div>
     </el-dialog>
     
-
+    <!-- 分配角色对话框 -->
+    <el-dialog 
+        title="分配角色"
+        :visible.sync="setRoleDialogFormVisible">
+        <el-form 
+        label-width="80px"
+        :model="formData">
+            <el-form-item label="用户名">
+                {{ formData.username }}
+            </el-form-item>
+             <el-form-item label="选择角色">
+                 <el-select v-model="currentRoleId" placeholder="请选择">
+                    <el-option
+                    label="请选择"
+                    :value="-1"
+                    disabled>  
+                    </el-option>
+                    <el-option
+                        v-for="item in options.data"
+                        :key="item.id"
+                        :label="item.roleName"
+                        :value="item.id">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="setRoleDialogFormVisible = false">取 消</el-button>
+            <el-button @click="handleSetRole" type="primary">确 定</el-button>
+        </div>
+    </el-dialog>
   </el-card>
 </template>
 <script>
@@ -129,6 +159,7 @@
                 total: 0,
                 searchValue: '',
                 addUserDialogFormVisible:false,
+                setRoleDialogFormVisible:false,
                 formData: {
                     username:'',
                     password:'',
@@ -140,7 +171,9 @@
                         { required: true, message: '请输入用户名称', trigger: 'blur' },
                         { min: 3, max: 8, message: '长度在 3 到 8 个字符', trigger: 'blur' }
                     ]
-                }
+                },
+                currentRoleId: -1,
+                options:[]
 
             }
         },
@@ -192,11 +225,34 @@
                     
                 })
             },
+            // 用户角色信息
+            async handleOpenSetRole(user){
+                this.setRoleDialogFormVisible = true
+                this.formData.username = user.username
+                const response = await this.$http.get('roles')      
+                this.options = response.data  
+                
+                //当前用户默认角色
+                const res = await this.$http.get(`users/${user.id}`)
+                this.currentRoleId = res.data.data.rid
+                this.formData.id = user.id
+            },
             // 分页方法
             handleSizeChange(val){
                 // 页容量发生变化
                 this.pagesize = val
                 this.loadData()
+            },
+            // 更改角色信息事件
+            async handleSetRole(){
+               const response = await this.$http.put(`users/${this.formData.id}/role`,{rid:this.currentRoleId})
+               const {meta: {msg, status}} = response.data
+               if(status === 200){
+                   this.$message.success(msg)
+                   this.setRoleDialogFormVisible = false
+               }else{
+                   this.$message.error(msg)
+               }
             },
             handleCurrentChange(val){
                 // 当页码发送改变执行
@@ -247,9 +303,8 @@
                     });
                 }
             }
-           
             
-        
+            
     }
 </script>
 <style>
