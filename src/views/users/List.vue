@@ -111,7 +111,7 @@
         </el-form>
         <div slot="footer" class="dialog-footer">
             <el-button @click="addUserDialogFormVisible = false">取 消</el-button>
-            <el-button @click="addUserDialogFormVisible = false" type="primary">确 定</el-button>
+            <el-button @click="handleAdd" type="primary">确 定</el-button>
         </div>
     </el-dialog>
     
@@ -148,6 +148,27 @@
             this.loadData()
         },
         methods: {
+            async handleAdd(){
+                //添加用户
+                const response = await this.$http.post('users', this.formData)
+                const {meta: {status, msg}} = response.data
+                if(status === 201){
+                    //提示 刷新表格 关闭对话框 初始化表单
+                    this.$message.success(msg)
+                    this.loadData()
+                    this.addUserDialogFormVisible = false
+                    for(let key in this.formData){
+                        this.formData[key] = ''
+                    }
+                }else {
+                    this.$message.error(msg)
+                }
+            },
+            handleClose(){
+                for(let key in this.formData){
+                    this.formData[key] = ''
+                }
+            },
             //  设置token
             loadData() { 
                 this.loading=true
@@ -182,6 +203,16 @@
                 this.pagenum = val
                 this.loadData()
             },
+            async handleChange(user){
+            // id 和 状态 两个参数
+                const response = await this.$http.put(`users/${user.id}/state/${user.mg_state}`)
+                const {meta: {status, msg}} = response.data
+                if(status === 200){
+                    this.$message.success(msg)
+                }else{
+                    this.$message.error(msg)
+                }
+            },
             handleSerach(){
                 //搜索功能
                
@@ -215,38 +246,9 @@
                         });          
                     });
                 }
-            },
-            async handleChange(user){
-                // id 和 状态 两个参数
-               const response = await this.$http.put(`users/${user.id}/state/${user.mg_state}`)
-               const {meta: {status, msg}} = response.data
-               if(status === 200){
-                   this.$message.success(msg)
-               }else{
-                   this.$message.error(msg)
-               }
-            },
-            async handleAdd(){
-                //添加用户
-                const response = await this.$http.post('users', this.formData)
-                const {meta: {status, msg}} = response.data
-                if(status === 201){
-                    //提示 刷新表格 关闭对话框 初始化表单
-                    this.$message.success(msg)
-                    this.loadData()
-                    this.addUserDialogFormVisible = false
-                    for(let key in this.formData){
-                        this.formData[key] = ''
-                    }
-                }else {
-                    this.$message.error(msg)
-                }
-            },
-            handleClose(){
-                for(let key in this.formData){
-                    this.formData[key] = ''
-                }
             }
+           
+            
         
     }
 </script>
