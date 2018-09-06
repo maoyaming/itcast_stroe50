@@ -20,48 +20,21 @@
             :router="true"
             style="height:100%"
             default-active="0">
-            <el-submenu index="1">
+            <el-submenu
+            v-for="level1 in menus" :key="level1.id"
+            :index="level1.path">
                 <template slot="title">
                 <i class="el-icon-location"></i>
-                <span>用户管理</span>
+                <span>{{ level1.authName }}</span>
                 </template>
-                <el-menu-item-group>
-                <el-menu-item index="/users">
+                <el-menu-item
+                 v-for="level2 in level1.children" :key="level2.id"
+                :index ="'/' + level2.path">
                 <i class="el-icon-search"></i>
-                    用户列表
+                    {{ level2.authName }}
                 </el-menu-item>
-                </el-menu-item-group>
             </el-submenu>
-            <el-submenu index="2">
-                <template slot="title">
-                <i class="el-icon-location"></i>
-                <span>权限管理</span>
-                </template>
-                <el-menu-item-group>
-                <el-menu-item index="/roles"> <i class="el-icon-search"></i>角色列表</el-menu-item>
-                <el-menu-item index="/rights"> <i class="el-icon-search"></i>权限列表</el-menu-item>
-                </el-menu-item-group>
-            </el-submenu>
-            <el-submenu index="3">
-                <template slot="title">
-                <i class="el-icon-location"></i>
-                <span>商品管理</span>
-                </template>
-                <el-menu-item-group>
-                <el-menu-item index="3-1"> <i class="el-icon-search"></i>商品列表</el-menu-item>
-                <el-menu-item index="3-2"> <i class="el-icon-search"></i>分类参数</el-menu-item>
-                <el-menu-item index="3-3"> <i class="el-icon-search"></i>商品分类</el-menu-item>
-                </el-menu-item-group>
-            </el-submenu>
-            <el-submenu index="4">
-                <template slot="title">
-                <i class="el-icon-location"></i>
-                <span>订单管理</span>
-                </template>
-                <el-menu-item-group>
-                <el-menu-item index="4-1"> <i class="el-icon-search"></i>订单列表</el-menu-item>
-                </el-menu-item-group>
-            </el-submenu>
+           
         </el-menu>
     </el-aside>
       <el-main>
@@ -72,6 +45,14 @@
 </template>
 <script>
     export default {
+        data() {
+            return {
+                menus: []
+            }
+        },
+        created() {
+            this.loadMenus()
+        },
         //判断登录
         beforeCreate() {
             const token = sessionStorage.getItem('token')
@@ -82,12 +63,29 @@
             }
         },
         methods: {
+            loadMenus() {
+                this.$http.get('menus')
+                    .then((response)=>{
+                        const { meta: { msg, status }} = response.data
+                        if(status === 200){
+                            this.menus = response.data.data
+                        }
+                    })
+            },
             handleOut(){
                 sessionStorage.clear();
                 this.$message.success('退出成功')
                 this.$router.push('/login')
-            }        
-        }
+            },
+            // async loadMenus() {
+            //     const response = await this.$http.get('menus');
+            //     const { meta: { msg, status } } = response.data;
+            //     if (status === 200) {
+            //         this.menus = response.data.data;
+            //     }
+            //     }
+            // }
+    }
     }
 </script>
 <style>
