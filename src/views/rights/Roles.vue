@@ -68,6 +68,7 @@
             :visible.sync="dialogVisible">
             <span>
                 <el-tree
+                ref="tree"
                 default-expand-all
                 :props="defaultProps"
                 :data="data"
@@ -78,7 +79,7 @@
             </span>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+                <el-button type="primary" @click="handleSetRights">确 定</el-button>
             </span>
         </el-dialog>
     </el-card>
@@ -97,7 +98,8 @@
                   label:'authName',
                     //   子节点对象的属性
                   children:'children'
-              }
+              },
+              currentRoleId: -1
           }
       },
       created() {
@@ -129,21 +131,45 @@
                     })
             },
             handleClick(role) {
-            this.dialogVisible = true
-            this.$http.get('rights/tree')
-                .then((response)=>{
-                    this.data = response.data.data
-                    const arr = []
-                    //三层遍历  获取第三级的权限id  level1 -> level2 -> level3
-                    role.children.forEach((level1)=>{
-                        level1.children.forEach((level2)=>{
-                            level2.children.forEach((level3)=>{
-                                arr.push(level3.id)
+                this.dialogVisible = true
+                this.$http.get('rights/tree')
+                    .then((response)=>{
+                        this.data = response.data.data
+                        const arr = []
+                        //三层遍历  获取第三级的权限id  level1 -> level2 -> level3
+                        role.children.forEach((level1)=>{
+                            level1.children.forEach((level2)=>{
+                                level2.children.forEach((level3)=>{
+                                    arr.push(level3.id)
+                                })
                             })
                         })
+                        this.checkedKeys = arr
+                        this.currentRoleId = role.id
                     })
-                    this.checkedKeys = arr
+            },
+            handleSetRights() {
+                // roles/:roleId/rights
+                // getCheckedKeys getHalfCheckedKeys
+                //获得选中和半选的id   
+                const arr1  = this.$refs.tree.getCheckedKeys()
+                const arr2  = this.$refs.tree.getHalfCheckedKeys()
+                const arr = [...arr1,...arr2]
+                const rids = arr.join(',')
+
+                this.$http.post(`roles/${this.currentRoleId}/rights`,{
+                    rids: rids
+                }).then((response)=>{
+                    const {meta: {msg, status}} = response.data
+                    if(status === 200){
+                        this.$message.success(msg)
+                        this.dialogVisible = false
+                        this.loadData()
+                    }else{
+                        this.$message.error(msg)
+                    }
                 })
+
             }
          
       }
