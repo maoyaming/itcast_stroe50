@@ -3,7 +3,7 @@
         <!-- /面包屑 -->
         <my-breadcrumb leavel1='权限管理' leavel2='角色列表'></my-breadcrumb>
         <el-button
-        style="margin-top:10px;margin-buttom:10px" 
+        style="margin:10px" 
         type="primary" plain>添加角色</el-button>
         <el-table border stripe :data="tableData" style="width: 100%">
             <el-table-column type="expand">
@@ -57,7 +57,7 @@
             <el-table-column label="操作">
                 <template slot-scope="scope">
                     <el-button type="primary" icon="el-icon-edit" size="mini" plain></el-button>
-                    <el-button @click="handleClick" type="success" icon="el-icon-check" size="mini" plain></el-button>
+                    <el-button @click="handleClick(scope.row)" type="success" icon="el-icon-check" size="mini" plain></el-button>
                     <el-button type="danger" icon="el-icon-delete" size="mini" plain></el-button>
                 </template>
             </el-table-column>
@@ -71,8 +71,9 @@
                 default-expand-all
                 :props="defaultProps"
                 :data="data"
-                show-checkbox>
-
+                show-checkbox
+                node-key="id"
+                :default-checked-keys="checkedKeys">
                 </el-tree>
             </span>
             <span slot="footer" class="dialog-footer">
@@ -90,6 +91,7 @@
               dialogVisible: false,
               //提供绑定的数据
               data: [],
+              checkedKeys: [],
               defaultProps: {
                   //树上的节点对象的属性
                   label:'authName',
@@ -126,11 +128,21 @@
                         }
                     })
             },
-            handleClick() {
+            handleClick(role) {
             this.dialogVisible = true
             this.$http.get('rights/tree')
                 .then((response)=>{
                     this.data = response.data.data
+                    const arr = []
+                    //三层遍历  获取第三级的权限id  level1 -> level2 -> level3
+                    role.children.forEach((level1)=>{
+                        level1.children.forEach((level2)=>{
+                            level2.children.forEach((level3)=>{
+                                arr.push(level3.id)
+                            })
+                        })
+                    })
+                    this.checkedKeys = arr
                 })
             }
          
